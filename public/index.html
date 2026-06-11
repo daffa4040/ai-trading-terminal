@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading AI Terminal</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --accent-color: #000000;
+            --user-bg: #f4f4f5;
+            --bot-bg: #ffffff;
+        }
+
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Container Full Width */
+        .container { 
+            width: 100%; 
+            padding: 15px 30px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .header { 
+            border-bottom: 2px solid var(--accent-color); 
+            padding-bottom: 10px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .brand h1 { 
+            margin: 0; 
+            font-size: 20px; /* Font lebih kecil */
+            font-weight: 800; 
+            letter-spacing: -0.5px; 
+            text-transform: uppercase;
+        }
+
+        .brand p { 
+            margin: 2px 0 0 0; 
+            font-size: 12px; /* Font lebih kecil */
+            font-weight: 600; 
+            color: var(--text-muted); 
+            letter-spacing: 0.5px;
+        }
+
+        .market-status {
+            font-size: 11px;
+            font-weight: bold;
+            color: #27ae60;
+            text-transform: uppercase;
+        }
+
+        /* Ticker Market Movers */
+        .movers-bar {
+            background-color: #111;
+            color: #fff;
+            padding: 8px 30px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .gainer { color: #00e676; }
+        .loser { color: #ff5252; }
+
+        #chat-box { 
+            flex: 1; /* Memenuhi sisa layar */
+            overflow-y: auto; 
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            margin-top: 10px;
+            margin-bottom: 15px; 
+            background: #fafafa;
+        }
+
+        .message { 
+            margin-bottom: 15px; 
+            line-height: 1.5; 
+            padding: 12px 18px; 
+            border-left: 3px solid transparent;
+            font-size: 13.5px; /* Font pesan lebih kecil & presisi */
+        }
+
+        .user-msg { 
+            background-color: var(--user-bg); 
+            border-left-color: #a0aec0; 
+        }
+
+        .bot-msg { 
+            background-color: var(--bot-bg); 
+            border: 1px solid var(--border-color);
+            border-left-color: var(--accent-color); 
+        }
+
+        .input-area { display: flex; gap: 10px; }
+
+        input { 
+            flex: 1; 
+            padding: 12px 15px; 
+            border: 1px solid var(--border-color); 
+            background: var(--bg-color); 
+            font-size: 14px; /* Font input lebih kecil */
+            transition: all 0.2s ease;
+        }
+
+        input:focus { border-color: var(--accent-color); outline: none; }
+
+        button { 
+            padding: 0 25px; 
+            border: none; 
+            background-color: var(--accent-color); 
+            color: #ffffff; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 12px; 
+            text-transform: uppercase;
+        }
+
+        button:hover { background-color: #333; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #bbb; }
+    </style>
+</head>
+<body>
+    <div class="movers-bar" id="movers-bar">
+        <span>MARKET MOVERS (Loading...)</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="brand">
+                <h1>AI Trading Terminal</h1>
+                <p>Alif Daffa Hernanda | Final Project</p>
+            </div>
+            <div class="market-status">● Database Connected</div>
+        </div>
+        
+        <div id="chat-box">
+            <div class="message bot-msg">
+                <b>Sistem:</b> Terminal aktif. Masukkan kode emiten atau pertanyaan seputar pergerakan pasar.
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ketik prompt analisa (misal: Analisa fundamental DMAS)..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()" id="sendBtn">Eksekusi</button>
+        </div>
+    </div>
+
+    <script>
+        // Mengambil data Top Gainer & Loser saat web dibuka
+        async function fetchMovers() {
+            try {
+                const response = await fetch('/api/movers');
+                const data = await response.json();
+                
+                const gainerIcon = data.topGainer.change > 0 ? '▲' : '';
+                const loserIcon = data.topLoser.change < 0 ? '▼' : '';
+
+                document.getElementById('movers-bar').innerHTML = `
+                    <span>IHSG WATCHLIST</span>
+                    <span>|</span>
+                    <span>TOP GAINER: <span class="gainer">${data.topGainer.symbol} Rp${data.topGainer.price} (${gainerIcon} ${data.topGainer.change}%)</span></span>
+                    <span>|</span>
+                    <span>TOP LOSER: <span class="loser">${data.topLoser.symbol} Rp${data.topLoser.price} (${loserIcon} ${data.topLoser.change}%)</span></span>
+                `;
+            } catch (error) {
+                document.getElementById('movers-bar').innerHTML = '<span>MARKET MOVERS (Gagal Memuat Data)</span>';
+            }
+        }
+
+        // Jalankan fetch saat halaman selesai dimuat
+        window.onload = fetchMovers;
+
+        let chatHistory = [];
+
+        function handleEnter(e) { if(e.key === 'Enter') sendMessage(); }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('userInput');
+            const input = inputField.value.trim();
+            if (!input) return;
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="message user-msg"><b>User:</b><br>${input}</div>`;
+            inputField.value = '';
+            
+            const emitenMatch = input.match(/\b[A-Z]{4}\b/i);
+            const emiten = emitenMatch ? emitenMatch[0].toUpperCase() : null;
+
+            const loadingId = 'load-' + Date.now();
+            chatBox.innerHTML += `<div class="message bot-msg" id="${loadingId}"><i>Memproses data market...</i></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: input, emiten: emiten, history: chatHistory })
+                });
+                const data = await response.json();
+                
+                document.getElementById(loadingId).remove();
+                
+                let formattedReply = data.reply.replace(/\n/g, '<br>');
+                formattedReply = formattedReply.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                chatBox.innerHTML += `<div class="message bot-msg"><b>AI Analyst:</b><br>${formattedReply}</div>`;
+
+                chatHistory.push({ role: "user", content: input });
+                chatHistory.push({ role: "assistant", content: data.reply });
+
+                if (chatHistory.length > 8) {
+                    chatHistory.splice(0, 2);
+                }
+
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `<div class="message bot-msg" style="color: #d32f2f; border-left-color: #d32f2f;"><b>Sistem Error:</b> Gagal mengeksekusi perintah.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
