@@ -28,14 +28,15 @@ Jika Anda ingin mengkloning dan menjalankan proyek ini di komputer lokal, ikuti 
 git clone [https://github.com/daffa4040/ai-trading-terminal.git](https://github.com/daffa4040/ai-trading-terminal.git)
 cd ai-trading-terminal
 
-2. Instal Dependensi
+
+### 2. Instal Dependensi
 
 Pastikan Anda sudah menginstal Node.js di komputer Anda, lalu jalankan:
 Bash
 
 npm install
 
-3. Konfigurasi Environment Variables
+### 3. Konfigurasi Environment Variables
 
 Buat sebuah file bernama .env di root directory proyek, lalu isi dengan format kredensial berikut:
 Cuplikan kode
@@ -49,7 +50,7 @@ DB_USER=user_tidb_anda
 DB_PASSWORD=password_tidb_anda
 DB_NAME=nama_database_anda
 
-4. Jalankan Server
+### 4. Jalankan Server
 Bash
 
 node api/index.js
